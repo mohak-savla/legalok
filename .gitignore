@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.env
+*.db
+*.db-journal
+**/data/
+debug/
+install*.log
+install_done.txt
+.DS_Store
+*.log

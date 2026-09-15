@@ -1,0 +1,84 @@
+/* Document rendering styles — legal document look + "Murfed" redaction chips */
+.doc-page {
+  background: #fff;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 56px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #111827;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.doc-page h1 { font-size: 22px; text-align: center; letter-spacing: .5px; margin: 0 0 20px; text-transform: uppercase; }
+.doc-page h2 { font-size: 16px; margin: 22px 0 8px; border-bottom: 1px solid #E5E7EB; padding-bottom: 4px; }
+.doc-page p { margin: 8px 0; text-align: justify; }
+.doc-page ol, .doc-page ul { margin: 8px 0 8px 22px; }
+.doc-page li { margin: 4px 0; }
+.doc-page .sig-block { margin-top: 36px; border-top: 1px dashed #D1D5DB; padding-top: 16px; }
+.doc-page .sig-block p { margin: 10px 0; }
+
+.murfed-chip {
+  display: inline-block;
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+  color: #92400E;
+  border-radius: 6px;
+  padding: 0 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  filter: blur(0.4px);
+  user-select: none;
+}
+
+.sig-img { height: 64px; vertical-align: middle; }
+
+/* Executed signatures (injected by the server once parties sign) */
+.sig-execution { margin-top: 44px; border-top: 2px solid #111827; padding-top: 18px; break-inside: avoid; }
+.sig-block { margin: 20px 0 30px; break-inside: avoid; }
+.sig-label {
+  font-family: 'Inter', sans-serif; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .4px; color: #6B7280; margin-bottom: 6px;
+}
+.sig-typed {
+  font-family: 'Segoe Script', 'Brush Script MT', cursive;
+  font-size: 24px; color: #1F2937;
+  border-bottom: 1px solid #9CA3AF;
+  padding: 0 10px 2px; display: inline-block; max-width: 340px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sig-execution .sig-img { height: 72px; max-width: 340px; object-fit: contain; border-bottom: 1px solid #D1D5DB; padding: 0 10px 4px; }
+.doc-page .sig-slot { display: none; } /* empty placeholder never shows in the final doc */
+
+/* ---- Tables · images · page breaks · signature kinds (final document) ---- */
+.doc-page table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+.doc-page th, .doc-page td { border: 1px solid #9CA3AF; padding: 6px 10px; text-align: left; vertical-align: top; }
+.doc-page th { background: #F3F4F6; font-weight: 600; }
+.doc-page img { max-width: 100%; }
+
+.doc-page .sig-inline { font-family: 'Inter', sans-serif; font-size: 14px; color: #111827; }
+.sig-initials { font-family: 'Segoe Script', 'Brush Script MT', cursive; font-size: 18px; letter-spacing: 1px; }
+.sig-date { color: #374151; }
+
+/* Page breaks — invisible on screen, real page break when printing */
+.doc-page .page-break { display: none; }
+.doc-page .repeat-block, .doc-page .repeat-head { display: none; } /* safety — resolver already strips repeat chrome */
+@media print {
+  .doc-page .page-break { display: block; height: 0; page-break-after: always; break-after: page; }
+}
+
+/* Auto-numbering: real <ol> counters renumber automatically when clauses
+   are inserted/deleted by conditional logic — never hand-type numbers */
+.doc-page ol { list-style: decimal; }
+
+/* Auto-numbering: counters on real <ol> lists — renumber automatically when
+   conditional clauses are inserted/deleted (never hand-type numbers) */
+.doc-page ol { padding-left: 30px; margin: 10px 0; }
+.doc-page ol > li { margin: 8px 0; display: list-item; }
+.doc-page ol ol { margin-top: 6px; }
+.doc-page ol > li::marker { font-weight: 600; }
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff !important; }
+  .doc-page { box-shadow: none; border-radius: 0; max-width: none; padding: 0; }
+}

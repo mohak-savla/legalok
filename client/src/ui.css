@@ -1,0 +1,38 @@
+/* Global UI motion + polish — imported once in main.tsx */
+
+/* Route change: subtle fade + rise (opacity/transform only — compositor friendly) */
+.route-fade { animation: routeFade 260ms cubic-bezier(.22, 1, .36, 1); }
+@keyframes routeFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+html { scroll-behavior: smooth; }
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+button, [role="button"], [role="tab"] { touch-action: manipulation; }
+::selection { background: #DBEAFE; color: #1E3A8A; }
+
+/* Quiet, slender scrollbars — less visual noise on studio panels & lists */
+* { scrollbar-width: thin; scrollbar-color: #CBD5E1 transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Prevent widows on headings */
+h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
+
+/* Accessibility: honor reduced-motion — collapse all decorative animation */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .route-fade { animation: none; }
+}
