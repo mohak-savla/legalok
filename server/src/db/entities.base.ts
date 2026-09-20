@@ -1,5 +1,5 @@
-/**
- * Core entities + shared types (part 1 of 2 — see entities.ts for the rest).
+﻿/**
+ * Core entities + shared types (part 1 of 2 â€” see entities.ts for the rest).
  * Dialect-agnostic: same entities run on SQLite (dev) and PostgreSQL (prod).
  */
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
@@ -29,7 +29,7 @@ export const DOC_STATUSES = [
 ] as const;
 export type DocStatus = (typeof DOC_STATUSES)[number];
 
-/** Valid lifecycle transitions (PRD §4 state machine) */
+/** Valid lifecycle transitions (PRD Â§4 state machine) */
 export const VALID_TRANSITIONS: Record<DocStatus, DocStatus[]> = {
   draft: ['draft', 'awaiting_payment', 'generated'],
   awaiting_payment: ['awaiting_payment', 'generated', 'expired'],
@@ -56,10 +56,10 @@ export class User {
   /** 'user' | 'admin' */
   @Column({ type: 'text', default: 'user' }) role!: string;
   @Column({ type: 'boolean', default: true }) isActive!: boolean;
-  @Column({ type: 'datetime', nullable: true }) lastLoginAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) lastLoginAt!: Date | null;
   @CreateDateColumn() createdAt!: Date;
   @UpdateDateColumn() updatedAt!: Date;
-  @Column({ type: 'datetime', nullable: true }) deletedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) deletedAt!: Date | null;
 }
 
 @Entity('user_sessions')
@@ -70,9 +70,9 @@ export class UserSession {
   @Column({ type: 'text', unique: true }) refreshTokenHash!: string;
   @Column({ type: 'text', nullable: true }) ipAddress!: string | null;
   @Column({ type: 'text', nullable: true }) userAgent!: string | null;
-  @Column({ type: 'datetime' }) expiresAt!: Date;
+  @Column({ type: 'timestamp' }) expiresAt!: Date;
   @CreateDateColumn() createdAt!: Date;
-  @Column({ type: 'datetime', nullable: true }) revokedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) revokedAt!: Date | null;
 }
 
 @Entity('templates')
@@ -82,16 +82,16 @@ export class Template {
     @PrimaryGeneratedColumn('uuid') id!: string;
   @Column({ type: 'text' }) name!: string;
   @Column({ type: 'text', unique: true }) slug!: string;
-  /** 'business' | 'personal' — Wonder.Legal-style top-level split */
+  /** 'business' | 'personal' â€” Wonder.Legal-style top-level split */
   @Column({ type: 'text', default: 'business' }) audience!: string;
   @Column({ type: 'text' }) category!: string;
   @Column({ type: 'text', nullable: true }) description!: string | null;
     @Column({ type: 'integer', default: 10 }) estimatedTimeMinutes!: number;
   @Column({ type: 'boolean', default: false }) isPaid!: boolean;
     @Column({ type: 'real', default: 0 }) price!: number;
-  /** QuestionField[] — built in the Admin Studio (Form Builder) */
+  /** QuestionField[] â€” built in the Admin Studio (Form Builder) */
   @Column('json', { default: '{}' }) questionnaireSchema!: QuestionField[];
-  /** Handlebars body — built in the Admin Studio (Document Builder) */
+  /** Handlebars body â€” built in the Admin Studio (Document Builder) */
   @Column('text') documentHtml!: string;
     @Column({ type: 'boolean', default: true }) isActive!: boolean;
   /** 'draft' | 'published' */
@@ -101,8 +101,8 @@ export class Template {
   @Column({ type: 'text', nullable: true }) createdBy!: string | null;
   @CreateDateColumn() createdAt!: Date;
   @UpdateDateColumn() updatedAt!: Date;
-  @Column({ type: 'datetime', nullable: true }) publishedAt!: Date | null;
-  @Column({ type: 'datetime', nullable: true }) deletedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) publishedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) deletedAt!: Date | null;
 }
 
 @Entity('template_versions')

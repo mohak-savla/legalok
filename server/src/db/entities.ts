@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Document-lifecycle entities (part 2) + barrel re-export of all entities.
  */
 import {
@@ -28,12 +28,12 @@ export class UserDocument {
   @Column({ type: 'text', default: 'pending' }) paymentStatus!: string;
   @Column({ type: 'text', nullable: true }) paymentTransactionId!: string | null;
   @Column({ type: 'real', nullable: true }) paymentAmount!: number | null;
-  @Column({ type: 'datetime', nullable: true }) paidAt!: Date | null;
-  @Column({ type: 'datetime', nullable: true }) expiresAt!: Date | null;
-  @Column({ type: 'datetime', nullable: true }) signedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) paidAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) expiresAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) signedAt!: Date | null;
   @CreateDateColumn() createdAt!: Date;
   @UpdateDateColumn() updatedAt!: Date;
-  @Column({ type: 'datetime', nullable: true }) deletedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) deletedAt!: Date | null;
 }
 
 @Entity('document_signatures')
@@ -49,13 +49,13 @@ export class DocumentSignature {
   @Column({ type: 'text', default: 'click' }) signatureType!: string;
   @Column({ type: 'text', default: 'pending' }) signatureStatus!: string;
   @Column({ type: 'text', nullable: true }) signingToken!: string;
-  @Column({ type: 'datetime', nullable: true }) tokenExpiresAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) tokenExpiresAt!: Date | null;
   /** Drawn dataURL or typed name */
   @Column({ type: 'text', nullable: true }) signatureData!: string | null;
     @Column({ type: 'boolean', default: false }) isOwner!: boolean;
   @Column({ type: 'text', nullable: true }) aadhaarReference!: string | null;
-  @Column({ type: 'datetime', nullable: true }) signedAt!: Date | null;
-  @Column({ type: 'datetime', nullable: true }) viewedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) signedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) viewedAt!: Date | null;
   @Column({ type: 'text', nullable: true }) message!: string | null;
   @CreateDateColumn() createdAt!: Date;
   @UpdateDateColumn() updatedAt!: Date;
@@ -105,7 +105,7 @@ export class PaymentTransaction {
   @Column('json', { nullable: true }) webhookPayload!: Record<string, unknown> | null;
   @CreateDateColumn() createdAt!: Date;
   @UpdateDateColumn() updatedAt!: Date;
-  @Column({ type: 'datetime', nullable: true }) completedAt!: Date | null;
+  @Column({ type: 'timestamp', nullable: true }) completedAt!: Date | null;
 }
 
 @Entity('email_logs')
@@ -119,7 +119,7 @@ export class EmailLog {
   @Column({ type: 'text', nullable: true }) body!: string | null;
   @Column({ type: 'text', nullable: true }) documentId!: string | null;
   @Column({ type: 'text', nullable: true }) signatureId!: string | null;
-  /** 'sent' | 'failed' — swap-in point for Amazon SES */
+  /** 'sent' | 'failed' â€” swap-in point for Amazon SES */
      @Column({ type: 'text', default: 'sent' }) status!: string;
   @CreateDateColumn() createdAt!: Date;
 }
