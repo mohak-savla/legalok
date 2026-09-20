@@ -71,7 +71,7 @@ export async function runExpiryJob(): Promise<void> {
   const docRepo = repo(UserDocument);
   const overdue = await docRepo
     .createQueryBuilder()
-    .where('status IN (:...st) AND expiresAt IS NOT NULL AND expiresAt < :now', {
+    .where('status IN (:...st) AND "expiresAt" IS NOT NULL AND "expiresAt" < :now', {
       st: ['awaiting_payment', 'pending_signatures', 'partially_signed'],
       now,
     })
@@ -85,7 +85,7 @@ export async function runExpiryJob(): Promise<void> {
   const sigRepo = repo(DocumentSignature);
   const stale = await sigRepo
     .createQueryBuilder()
-    .where("signatureStatus IN ('pending','sent','viewed') AND tokenExpiresAt IS NOT NULL AND tokenExpiresAt < :now", { now })
+    .where("\"signatureStatus\" IN ('pending','sent','viewed') AND \"tokenExpiresAt\" IS NOT NULL AND \"tokenExpiresAt\" < :now", { now })
     .getMany();
   for (const s of stale) {
     s.signatureStatus = 'expired';

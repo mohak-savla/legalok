@@ -23,11 +23,11 @@ templatesRouter.get(
     const { q, category, audience, pricing, favorites } = req.query as Record<string, string | undefined>;
     const qb = repo(Template)
       .createQueryBuilder('t')
-      .where("t.isActive = 1 AND t.status = 'published' AND t.deletedAt IS NULL");
+      .where("t.isActive = true AND t.status = 'published' AND t.deletedAt IS NULL");
     if (audience) qb.andWhere('t.audience = :audience', { audience });
     if (category) qb.andWhere('t.category = :category', { category });
-    if (pricing === 'free') qb.andWhere('t.isPaid = 0');
-    if (pricing === 'paid') qb.andWhere('t.isPaid = 1');
+    if (pricing === 'free') qb.andWhere('t.isPaid = false');
+    if (pricing === 'paid') qb.andWhere('t.isPaid = true');
     if (q) qb.andWhere('(t.name LIKE :like OR t.description LIKE :like OR t.category LIKE :like)', { like: `%${q}%` });
 
     let favIds: string[] = [];
