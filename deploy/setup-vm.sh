@@ -40,6 +40,7 @@ cd "$APP_DIR" && git pull --ff-only || true
 
 echo "==> 4/6 Build API"
 cd "$APP_DIR/server"
+chown -R legalok:legalok "$APP_DIR"
 sudo -u legalok npm ci
 sudo -u legalok npm run build
 mkdir -p "$APP_DIR/server/data/uploads"
