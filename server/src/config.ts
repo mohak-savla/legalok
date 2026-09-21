@@ -47,7 +47,11 @@ export const config = {
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || 'legalok_mock_gateway_secret',
   signingExpiryDays: parseInt(process.env.SIGNING_EXPIRY_DAYS || '7', 10),
   appUrl: process.env.APP_URL || 'http://localhost:5173',
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  /** CORS origin(s): comma-separated list supported, e.g. "https://a.x,https://b.y" */
+  corsOrigin: (process.env.CORS_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
   /** Supabase Auth (Google/Facebook OAuth). Empty = real OAuth disabled, mock social login stays. */
   supabaseUrl: (process.env.SUPABASE_URL || '').replace(/\/$/, ''),
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
