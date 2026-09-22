@@ -4,11 +4,13 @@ import { config } from '../config';
 import {
   User, UserSession, Template, TemplateVersion, UserDocument,
   DocumentSignature, AuditLog, UserFavorite, PaymentTransaction, EmailLog,
+  EmailTemplate,
 } from './entities';
 
 export const ENTITIES = [
   User, UserSession, Template, TemplateVersion, UserDocument,
   DocumentSignature, AuditLog, UserFavorite, PaymentTransaction, EmailLog,
+  EmailTemplate,
 ];
 
 /** Postgres options: honors DATABASE_URL (Supabase/Neon/any pg host) or discrete DB_* vars. */
