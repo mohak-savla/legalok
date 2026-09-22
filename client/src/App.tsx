@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, setUser, setBooted } from './store';
@@ -26,6 +26,7 @@ import AuditLogPage from './modules/audit/AuditLogPage';
 import Profile from './modules/profile/Profile';
 import AdminDashboard from './modules/admin/AdminDashboard';
 import AdminUsers from './modules/admin/AdminUsers';
+import AdminEmails from './modules/admin/AdminEmails';
 import AdminAudit from './modules/admin/AdminAudit';
 import AdminTemplates from './modules/admin/AdminTemplates';
 import TemplateStudio from './modules/admin/TemplateStudio';
@@ -82,6 +83,7 @@ export default function App(): JSX.Element {
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
 
             <Route path="/admin" element={<RequireAuth admin><AdminDashboard /></RequireAuth>} />
+            <Route path="/admin/emails" element={<RequireAuth admin><AdminEmails /></RequireAuth>} />
             <Route path="/admin/users" element={<RequireAuth admin><AdminUsers /></RequireAuth>} />
             <Route path="/admin/audit" element={<RequireAuth admin><AdminAudit /></RequireAuth>} />
             <Route path="/admin/templates" element={<RequireAuth admin><AdminTemplates /></RequireAuth>} />

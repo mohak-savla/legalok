@@ -69,6 +69,32 @@ documentLifecycleRouter.post(
       doc.paymentStatus = 'free';
     }
     await repo(UserDocument).save(doc);
+    // Zoho-style auto-send: deliver the generated document by email if the admin enabled it
+    if (!template.isPaid && template.autoSendOnGenerate) {
+      try {
+        const { renderEmailTemplate } = await import('../../services/mailer.service');
+        const { generatePdf } = await import('../../services/pdf.service');
+        const vars = {
+          user_name: req.user!.fullName, owner_name: req.user!.fullName,
+          document_title: doc.title, document_number: doc.documentNumber ?? '',
+          document_link: `${config.appUrl}/document/${doc.id}`,
+          generated_date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+        };
+        const rendered = await renderEmailTemplate('document-delivered', vars, {
+          subject: template.emailSubject ?? undefined, bodyHtml: template.emailBody ?? undefined,
+        });
+        const attachments: { filename: string; content: Buffer; contentType: string }[] = [];
+        if (template.attachPdf && doc.generatedHtmlKey) {
+          const pdf = await generatePdf(readObject(doc.generatedHtmlKey).toString('utf8'), doc.title);
+          const safe = doc.title.replace(/[^\w\- ]+/g, '').trim() || 'document';
+          attachments.push({ filename: `${safe}.pdf`, content: pdf, contentType: 'application/pdf' });
+        }
+        const { sendMail } = await import('../../services/mailer.service');
+        await sendMail({ toEmail: req.user!.email, toName: req.user!.fullName, template: 'document-delivered', vars, attachments, documentId: doc.id, html: rendered.html, subject: rendered.subject });
+      } catch (e) {
+        console.error('[auto-send] failed (document still generated)', e);
+      }
+    }
     template.usageCount += 1;
     await repo(Template).save(template);
     await logAudit(req, {

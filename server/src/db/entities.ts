@@ -119,9 +119,25 @@ export class EmailLog {
   @Column({ type: 'text', nullable: true }) body!: string | null;
   @Column({ type: 'text', nullable: true }) documentId!: string | null;
   @Column({ type: 'text', nullable: true }) signatureId!: string | null;
-  /** 'sent' | 'failed' â€” swap-in point for Amazon SES */
+  /** 'sent' | 'failed' — swap-in point for Amazon SES */
      @Column({ type: 'text', default: 'sent' }) status!: string;
   @CreateDateColumn() createdAt!: Date;
+}
+
+@Entity('email_templates')
+@Index('idx_email_tpl_key', ['key'])
+export class EmailTemplate {
+  @PrimaryGeneratedColumn('uuid') id!: string;
+  /** 'signing-request' | 'document-delivered' | ... */
+  @Column({ type: 'text', unique: true }) key!: string;
+  @Column({ type: 'text' }) name!: string;
+  @Column({ type: 'text' }) subject!: string;
+  @Column('text') bodyHtml!: string;
+  @Column({ type: 'boolean', default: true }) isEnabled!: boolean;
+  @Column({ type: 'text', nullable: true }) description!: string | null;
+  @Column({ type: 'text', nullable: true }) updatedBy!: string | null;
+  @CreateDateColumn() createdAt!: Date;
+  @UpdateDateColumn() updatedAt!: Date;
 }
 
 export type { QuestionField };

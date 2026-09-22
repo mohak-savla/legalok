@@ -34,6 +34,10 @@ export interface TemplateListItem {
 export interface TemplateFull extends TemplateListItem {
   questionnaireSchema: QuestionField[];
   documentHtml: string;
+  attachPdf?: boolean;
+  autoSendOnGenerate?: boolean;
+  emailSubject?: string | null;
+  emailBody?: string | null;
   isActive?: boolean; version?: number; createdAt?: string; publishedAt?: string | null;
 }
 

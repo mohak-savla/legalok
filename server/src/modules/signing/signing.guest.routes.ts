@@ -1,12 +1,14 @@
 /** Public guest signing endpoints (mounted at /api/sign) — User B needs no account */
 import { Router } from 'express';
 import { repo } from '../../db/connection';
+import { config } from '../../config';
 import { UserDocument, DocumentSignature, Template, User } from '../../db/entities';
 import { asyncHandler, HttpError, randomToken } from '../../utils/helpers';
 import { logAudit } from '../../middleware/audit';
 import { generateFinalDocument, recomputeAfterSignature } from '../../services/document.service';
 import { readObject } from '../../services/storage.service';
 import { injectSignatures } from '../../services/handlebars.service';
+import { sendMail } from '../../services/mailer.service';
 
 export const signGuestRouter = Router();
 
@@ -90,6 +92,20 @@ signGuestRouter.post(
       action: 'Document Signed (Guest)', actionCategory: 'signature', resourceType: 'document', resourceId: sig.documentId,
       details: { signerEmail: sig.signerEmail, type },
     });
+    // Notify the document owner (fires on every guest signature; final one reports completion)
+    const owner = await repo(User).findOne({ where: { id: doc?.userId ?? '' } });
+    if (owner) {
+      await sendMail({
+        toEmail: owner.email, toName: owner.fullName, template: 'document-completed',
+        vars: {
+          signer_name: sig.signerName, signer_email: sig.signerEmail,
+          owner_name: owner.fullName, document_title: doc?.title ?? 'your document',
+          document_number: doc?.documentNumber ?? null,
+          document_link: `${config.appUrl}/document/${sig.documentId}`,
+        },
+        documentId: sig.documentId, signatureId: sig.id,
+      });
+    }
     res.json({ message: 'Document signed successfully! Thank you.', status: doc?.status ?? 'pending_signatures' });
   }),
 );

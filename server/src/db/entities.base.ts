@@ -1,5 +1,5 @@
 ﻿/**
- * Core entities + shared types (part 1 of 2 â€” see entities.ts for the rest).
+ * Core entities + shared types (part 1 of 2 — see entities.ts for the rest).
  * Dialect-agnostic: same entities run on SQLite (dev) and PostgreSQL (prod).
  */
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
@@ -29,7 +29,7 @@ export const DOC_STATUSES = [
 ] as const;
 export type DocStatus = (typeof DOC_STATUSES)[number];
 
-/** Valid lifecycle transitions (PRD Â§4 state machine) */
+/** Valid lifecycle transitions (PRD §4 state machine) */
 export const VALID_TRANSITIONS: Record<DocStatus, DocStatus[]> = {
   draft: ['draft', 'awaiting_payment', 'generated'],
   awaiting_payment: ['awaiting_payment', 'generated', 'expired'],
@@ -82,16 +82,16 @@ export class Template {
     @PrimaryGeneratedColumn('uuid') id!: string;
   @Column({ type: 'text' }) name!: string;
   @Column({ type: 'text', unique: true }) slug!: string;
-  /** 'business' | 'personal' â€” Wonder.Legal-style top-level split */
+  /** 'business' | 'personal' — Wonder.Legal-style top-level split */
   @Column({ type: 'text', default: 'business' }) audience!: string;
   @Column({ type: 'text' }) category!: string;
   @Column({ type: 'text', nullable: true }) description!: string | null;
     @Column({ type: 'integer', default: 10 }) estimatedTimeMinutes!: number;
   @Column({ type: 'boolean', default: false }) isPaid!: boolean;
     @Column({ type: 'real', default: 0 }) price!: number;
-  /** QuestionField[] â€” built in the Admin Studio (Form Builder) */
+  /** QuestionField[] — built in the Admin Studio (Form Builder) */
   @Column('json', { default: '{}' }) questionnaireSchema!: QuestionField[];
-  /** Handlebars body â€” built in the Admin Studio (Document Builder) */
+  /** Handlebars body — built in the Admin Studio (Document Builder) */
   @Column('text') documentHtml!: string;
     @Column({ type: 'boolean', default: true }) isActive!: boolean;
   /** 'draft' | 'published' */
@@ -99,6 +99,11 @@ export class Template {
   @Column({ type: 'integer', default: 1 }) version!: number;
   @Column({ type: 'integer', default: 0 }) usageCount!: number;
   @Column({ type: 'text', nullable: true }) createdBy!: string | null;
+  /** Zoho-style mail merge: per-template delivery email (null = system default). */
+  @Column({ type: 'text', nullable: true }) emailSubject!: string | null;
+  @Column({ type: 'text', nullable: true }) emailBody!: string | null;
+  @Column({ type: 'boolean', default: true }) attachPdf!: boolean;
+  @Column({ type: 'boolean', default: false }) autoSendOnGenerate!: boolean;
   @CreateDateColumn() createdAt!: Date;
   @UpdateDateColumn() updatedAt!: Date;
   @Column({ type: 'timestamp', nullable: true }) publishedAt!: Date | null;

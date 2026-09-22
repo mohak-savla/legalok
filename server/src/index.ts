@@ -14,6 +14,7 @@ import { authProfileRouter } from './modules/auth/auth.profile.routes';
 import { templatesRouter } from './modules/templates/templates.routes';
 import { documentsRouter } from './modules/documents/documents.routes';
 import { documentLifecycleRouter } from './modules/documents/documents.lifecycle.routes';
+import { documentEmailRouter } from './modules/documents/documents.email.routes';
 import { paymentsRouter } from './modules/payments/payments.routes';
 import { signingRequestRouter } from './modules/signing/signing.request.routes';
 import { selfSignRouter } from './modules/signing/signing.selfsign.routes';
@@ -21,6 +22,7 @@ import { signGuestRouter } from './modules/signing/signing.guest.routes';
 import { adminRouter } from './modules/admin/admin.routes';
 import { adminTemplatesRouter } from './modules/admin/admin.templates.routes';
 import { adminTemplateWorkflowRouter } from './modules/admin/admin.templates.workflow.routes';
+import { adminEmailsRouter } from './modules/admin/admin.emails.routes';
 
 import { miscRouter } from './modules/misc/misc.routes';
 
@@ -45,12 +47,14 @@ async function main(): Promise<void> {
   app.use('/api/templates', templatesRouter);
   app.use('/api/documents', documentsRouter);
   app.use('/api/documents', documentLifecycleRouter);
+  app.use('/api/documents', documentEmailRouter);
   app.use('/api/documents', signingRequestRouter);
   app.use('/api/documents', selfSignRouter);
   app.use('/api/sign', signGuestRouter);
   app.use('/api/payments', paymentsRouter);
   app.use('/api/admin/templates', adminTemplatesRouter);
   app.use('/api/admin/templates', adminTemplateWorkflowRouter);
+  app.use('/api/admin/emails', adminEmailsRouter);
 
   app.use('/api/admin', adminRouter);
   app.use('/api', miscRouter);

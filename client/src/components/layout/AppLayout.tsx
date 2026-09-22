@@ -4,6 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import StarIcon from '@mui/icons-material/StarBorder';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
 import HistoryIcon from '@mui/icons-material/History';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
@@ -33,7 +34,8 @@ export default function AppLayout(): JSX.Element {
     { to: '/profile', label: t('profile'), icon: <PersonIcon /> },
   ];
   const adminItems = [
-    { to: '/admin', label: `${t('admin')} · Stats`, icon: <AdminPanelSettingsIcon /> },
+    { to: '/admin', label: 'Admin Overview', icon: <AdminPanelSettingsIcon /> },
+    { to: '/admin/emails', label: 'Email Studio', icon: <EmailIcon /> },
     { to: '/admin/templates', label: 'Templates Studio', icon: <LibraryBooksIcon /> },
     { to: '/admin/users', label: 'Users', icon: <PersonIcon /> },
     { to: '/admin/audit', label: 'System Audit', icon: <HistoryIcon /> },

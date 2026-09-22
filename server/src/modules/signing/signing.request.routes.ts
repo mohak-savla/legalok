@@ -50,8 +50,14 @@ signingRequestRouter.post(
     const owner = await repo(User).findOne({ where: { id: doc.userId } });
     await sendMail({
       toEmail: sig.signerEmail, toName: sig.signerName, template: 'signing-request',
-      subject: `Signature request: ${doc.title}`, documentId: doc.id, signatureId: sig.id,
-      body: `${owner?.fullName ?? 'Someone'} has requested your signature on: ${doc.title}\n\n${sig.message ? `Message: ${sig.message}\n\n` : ''}Sign here (valid ${config.signingExpiryDays} days): ${config.appUrl}/sign/${sig.signingToken}`,
+      vars: {
+        signer_name: sig.signerName, signer_email: sig.signerEmail,
+        owner_name: owner?.fullName ?? 'Someone', document_title: doc.title,
+        document_number: doc.documentNumber,
+        signing_link: `${config.appUrl}/sign/${sig.signingToken}`,
+        expiry_days: config.signingExpiryDays, message: sig.message,
+      },
+      documentId: doc.id, signatureId: sig.id,
     });
     await logAudit(req, {
       action: 'Signing Request Sent', actionCategory: 'signature', resourceType: 'document', resourceId: doc.id,
@@ -73,10 +79,17 @@ signingRequestRouter.post(
     sig.tokenExpiresAt = new Date(Date.now() + config.signingExpiryDays * 24 * 60 * 60 * 1000);
     sig.signatureStatus = 'sent';
     await repo(DocumentSignature).save(sig);
+    const owner = await repo(User).findOne({ where: { id: doc.userId } });
     await sendMail({
       toEmail: sig.signerEmail, toName: sig.signerName, template: 'signing-request-resend',
-      subject: `Reminder: signature request for ${doc.title}`, documentId: doc.id, signatureId: sig.id,
-      body: `New signing link (valid ${config.signingExpiryDays} days): ${config.appUrl}/sign/${sig.signingToken}`,
+      vars: {
+        signer_name: sig.signerName, signer_email: sig.signerEmail,
+        owner_name: owner?.fullName ?? 'Someone', document_title: doc.title,
+        document_number: doc.documentNumber,
+        signing_link: `${config.appUrl}/sign/${sig.signingToken}`,
+        expiry_days: config.signingExpiryDays,
+      },
+      documentId: doc.id, signatureId: sig.id,
     });
     await logAudit(req, {
       action: 'Signing Request Resent', actionCategory: 'signature', resourceType: 'document', resourceId: doc.id,

@@ -66,8 +66,7 @@ authProfileRouter.post(
       const token = jwt.sign({ sub: user.id, type: 'reset' }, config.jwtAccessSecret, { expiresIn: '30m' });
       await sendMail({
         toEmail: user.email, toName: user.fullName, template: 'reset-password',
-        subject: 'Reset your Legalok password',
-        body: `Reset link: ${config.appUrl}/reset-password?token=${token}`,
+        vars: { name: user.fullName, reset_link: `${config.appUrl}/reset-password?token=${token}` },
       });
     }
     res.json({ message: 'If an account exists for this email, a reset link has been sent.' });

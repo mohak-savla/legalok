@@ -45,7 +45,7 @@ authRouter.post(
     await logAudit(req, { action: 'User Registered', actionCategory: 'auth', resourceType: 'user', resourceId: user.id });
     await sendMail({
       toEmail: user.email, toName: user.fullName, template: 'welcome',
-      subject: 'Welcome to Legalok 🎉', body: `Hi ${user.fullName}, your Legalok account is ready.`,
+      vars: { name: user.fullName },
     });
     res.status(201).json({ ...tokens, user: publicUser(user) });
   }),

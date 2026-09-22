@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Typography, Button, Stack, Chip, Paper } from '@mui/material';
+import { Box, Typography, Button, Stack, Chip, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControlLabel, Switch, CircularProgress } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import PrintIcon from '@mui/icons-material/Print';
 import EditIcon from '@mui/icons-material/Edit';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import SendIcon from '@mui/icons-material/Send';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
+import EmailIcon from '@mui/icons-material/Email';
 import api, { getErrorMessage } from '../../services/api';
 import type { DocumentFull, QuestionField } from '../../types';
 import { Spinner, useToast } from '../../components/common';
@@ -23,6 +24,7 @@ export default function DocumentDetail(): JSX.Element {
   const [html, setHtml] = useState('');
   const [signOpen, setSignOpen] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
 
   const load = useCallback(async (): Promise<void> => {
     try {
@@ -123,8 +125,76 @@ export default function DocumentDetail(): JSX.Element {
 
       <DocumentAudit documentId={d.id} />
 
+      {unlocked && (
+        <Stack direction="row" sx={{ mb: 3 }}>
+          <Button variant="outlined" startIcon={<EmailIcon />} onClick={() => setEmailOpen(true)}>Email Document</Button>
+        </Stack>
+      )}
+
       <SelfSignDialog doc={d} open={signOpen} onClose={() => setSignOpen(false)} onSigned={() => { void load(); toast('Document signed successfully!'); }} />
       <SendSignDialog doc={d} open={sendOpen} onClose={() => setSendOpen(false)} onSent={() => { void load(); toast('Signing request sent 📧'); }} />
+      <EmailDocDialog doc={d} open={emailOpen} onClose={() => setEmailOpen(false)} onSent={() => { setEmailOpen(false); toast('Document emailed 📧'); }} />
     </Box>
+  );
+}
+
+/** Zoho-style "ensure what's being sent": live preview + recipient + PDF attachment. */
+function EmailDocDialog({ doc, open, onClose, onSent }: { doc: DocumentFull; open: boolean; onClose: () => void; onSent: () => void }): JSX.Element {
+  const toast = useToast();
+  const [toEmail, setToEmail] = useState('');
+  const [attachPdf, setAttachPdf] = useState(true);
+  const [preview, setPreview] = useState<{ subject: string; html: string; smtpConfigured: boolean } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setPreview(null);
+    api.get(`/documents/${doc.id}/email-preview`).then((r) => {
+      setPreview(r.data);
+      setToEmail((prev) => prev || (r.data.toEmail as string));
+      setAttachPdf(r.data.attachPdf !== false);
+    }).catch((e) => toast(getErrorMessage(e), 'error'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, doc.id]);
+
+  const send = async (): Promise<void> => {
+    setBusy(true);
+    try {
+      const { data } = await api.post(`/documents/${doc.id}/send-email`, { toEmail, attachPdf });
+      toast(data.message ?? 'Sent');
+      onSent();
+    } catch (e) { toast(getErrorMessage(e), 'error'); } finally { setBusy(false); }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle fontWeight={800}>Email this document</DialogTitle>
+      <DialogContent>
+        {preview?.smtpConfigured === false && (
+          <Typography variant="caption" sx={{ display: 'block', mb: 1.5, color: '#B45309' }}>
+            ⚠️ SMTP is not configured on the server — the email will be logged, not delivered.
+          </Typography>
+        )}
+        <TextField fullWidth size="small" label="Recipient email" type="email" value={toEmail} onChange={(e) => setToEmail(e.target.value)} sx={{ mb: 1.5 }} />
+        <FormControlLabel control={<Switch checked={attachPdf} onChange={(e) => setAttachPdf(e.target.checked)} />} label={<Typography variant="body2">Attach final PDF</Typography>} sx={{ mb: 1.5 }} />
+        <Typography variant="caption" fontWeight={700} sx={{ display: 'block', mb: 0.5 }}>THE EMAIL THE RECIPIENT WILL RECEIVE</Typography>
+        {preview ? (
+          <>
+            <Typography fontWeight={700} sx={{ mb: 1 }}>✉️ {preview.subject}</Typography>
+            <Box sx={{ border: '1px solid #E5E7EB', borderRadius: 2, overflow: 'hidden' }}>
+              <iframe title="doc-email-preview" srcDoc={preview.html} style={{ width: '100%', height: 340, border: 'none' }} />
+            </Box>
+          </>
+        ) : (
+          <Box sx={{ py: 4, textAlign: 'center' }}><CircularProgress size={22} /></Box>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="contained" startIcon={<EmailIcon />} onClick={send} disabled={busy || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(toEmail)}>
+          {busy ? 'Sending…' : 'Send Email'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }

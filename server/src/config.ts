@@ -46,6 +46,12 @@ export const config = {
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_mock_legalok',
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || 'legalok_mock_gateway_secret',
   signingExpiryDays: parseInt(process.env.SIGNING_EXPIRY_DAYS || '7', 10),
+  /** SMTP (Brevo/SES/any) — empty smtpUser = emails are logged, not sent */
+  smtpHost: process.env.SMTP_HOST || 'smtp-relay.brevo.net',
+  smtpPort: parseInt(process.env.SMTP_PORT || '587', 10),
+  smtpUser: process.env.SMTP_USER || '',
+  smtpPass: process.env.SMTP_PASS || '',
+  emailFrom: process.env.EMAIL_FROM || 'Legalok <noreply@legalok.app>',
   appUrl: process.env.APP_URL || 'http://localhost:5173',
   /** CORS origin(s): comma-separated list supported, e.g. "https://a.x,https://b.y" */
   corsOrigin: (process.env.CORS_ORIGIN || 'http://localhost:5173')
