@@ -9,7 +9,7 @@ import { EmailTemplate } from '../../db/entities';
 import { asyncHandler, HttpError } from '../../utils/helpers';
 import { authRequired, adminRequired, AuthUser } from '../../middleware/auth';
 import { logAudit } from '../../middleware/audit';
-import { renderEmailTemplate, TEMPLATE_VARIABLES, DEFAULTS } from '../../services/mailer.service';
+import { renderEmailTemplate, TEMPLATE_VARIABLES, DEFAULTS, SAMPLE_VARS, MailVars } from '../../services/mailer.service';
 
 export const adminEmailsRouter = Router();
 adminEmailsRouter.use(authRequired, adminRequired);
@@ -86,7 +86,7 @@ adminEmailsRouter.post(
   asyncHandler(async (req, res) => {
     const key = String(req.params.key);
     if (!KEYS.includes(key)) throw new HttpError(404, 'Unknown email template');
-    const vars = (req.body?.vars ?? {}) as Record<string, string>;
+    const vars = { ...SAMPLE_VARS, ...((req.body?.vars ?? {}) as Record<string, string>) };
     const overrides = {
       subject: (req.body?.subject as string | undefined) ?? undefined,
       bodyHtml: (req.body?.bodyHtml as string | undefined) ?? undefined,
@@ -104,11 +104,15 @@ adminEmailsRouter.post(
     if (!KEYS.includes(key)) throw new HttpError(404, 'Unknown email template');
     const user = (req as unknown as { user: AuthUser & { email: string; fullName: string } }).user;
     const { sendMail } = await import('../../services/mailer.service');
-    const vars = { name: user.fullName, ...(req.body?.vars ?? {}) } as Record<string, string>;
+    // Sample data first (so nothing renders blank), then real values override.
+    const vars: MailVars = { ...SAMPLE_VARS, name: user.fullName, ...((req.body?.vars ?? {}) as Record<string, string>) };
     await sendMail({
       toEmail: user.email, toName: user.fullName, template: key,
-      vars: { ...vars, signing_link: vars.signing_link ?? 'https://legalok.legalok.workers.dev/sign/sample-token', document_link: vars.document_link ?? 'https://legalok.legalok.workers.dev/dashboard' },
+      vars,
       subject: req.body?.subject, html: req.body?.bodyHtml,
+      attachments: req.body?.attachPdf && req.body?.pdfBase64
+        ? [{ filename: `${String(vars.document_title ?? 'document')}.pdf`, content: Buffer.from(String(req.body.pdfBase64), 'base64'), contentType: 'application/pdf' }]
+        : undefined,
     });
     await logAudit(req, { action: 'Email Test Sent', actionCategory: 'admin', resourceType: 'email_template', resourceId: key });
     res.json({ message: `Test email sent to ${user.email}` });

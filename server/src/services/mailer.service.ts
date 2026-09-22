@@ -98,6 +98,27 @@ export const DEFAULTS: Record<string, { name: string; subject: string; bodyHtml:
   },
 };
 
+/**
+ * Sample merge data for previews and test sends, so the admin always sees a
+ * fully-populated email (no blank "Signature request: " subjects). Any real
+ * values passed by the caller override these.
+ */
+export const SAMPLE_VARS: MailVars = {
+  signer_name: 'Riya Sharma',
+  signer_email: 'riya.sharma@example.com',
+  owner_name: 'Mohak Savla',
+  user_name: 'Riya Sharma',
+  name: 'Riya Sharma',
+  document_title: 'Freelance Service Agreement',
+  document_number: 'LGL-2026-0042',
+  signing_link: `${config.appUrl}/sign/sample-token`,
+  document_link: `${config.appUrl}/dashboard`,
+  reset_link: `${config.appUrl}/reset-password?token=sample`,
+  expiry_days: config.signingExpiryDays,
+  generated_date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+  message: 'Please review the terms and sign at your convenience.',
+};
+
 /** Public helper for the admin editor: which merge fields each template supports. */
 export const TEMPLATE_VARIABLES: Record<string, string[]> = {
   'signing-request': ['signer_name', 'signer_email', 'owner_name', 'document_title', 'document_number', 'signing_link', 'expiry_days', 'message'],
