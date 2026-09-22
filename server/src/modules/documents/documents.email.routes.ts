@@ -17,11 +17,25 @@ import { generatePdf } from '../../services/pdf.service';
 export const documentEmailRouter = Router();
 documentEmailRouter.use(authRequired);
 
-async function loadOwnedDoc(userId: string, id: string): Promise<UserDocument> {
+async function loadOwnedDoc(userId: string, id: string, allowAdmin = false): Promise<UserDocument> {
   if (!isUuid(id)) throw new HttpError(404, 'Document not found');
   const doc = await repo(UserDocument).findOne({ where: { id } });
-  if (!doc || doc.userId !== userId || doc.deletedAt) throw new HttpError(404, 'Document not found');
+  if (!doc || doc.deletedAt) throw new HttpError(404, 'Document not found');
+  const isOwner = doc.userId === userId;
+  if (!isOwner && !allowAdmin) throw new HttpError(404, 'Document not found');
   return doc;
+}
+
+/** True for admin accounts (may preview/send any document, like GET /documents/:id). */
+function isAdmin(user: AuthUser): boolean {
+  return user.role === 'admin';
+}
+
+/** Resolve the document owner row (merge vars must describe the owner, not the viewer). */
+async function docOwner(doc: UserDocument, viewer: AuthUser): Promise<User> {
+  const owner = await repo(User).findOne({ where: { id: doc.userId } });
+  if (owner) return owner;
+  return viewer as unknown as User;
 }
 
 /** Merge vars for a document delivery email. */
@@ -59,8 +73,9 @@ documentEmailRouter.get(
   '/:id/email-preview',
   asyncHandler(async (req, res) => {
     const user = publicDocEmailRouterGuard(req);
-    const doc = await loadOwnedDoc(user.id, String(req.params.id));
-    const owner = user as unknown as User;
+    const doc = await loadOwnedDoc(user.id, String(req.params.id), isAdmin(user));
+    const owner = await docOwner(doc, user);
+    const toEmail = String(req.query.to ?? '').trim() || owner.email;
     const tpl = await repo(Template).findOne({ where: { id: doc.templateId } });
     const vars = await docVars(doc, owner);
     const rendered = await renderEmailTemplate('document-delivered', vars, {
@@ -68,7 +83,7 @@ documentEmailRouter.get(
       bodyHtml: tpl?.emailBody ?? undefined,
     });
     res.json({
-      toEmail: owner.email, toName: owner.fullName, subject: rendered.subject, html: rendered.html,
+      toEmail, toName: owner.fullName, subject: rendered.subject, html: rendered.html,
       attachPdf: tpl?.attachPdf ?? true, smtpConfigured: Boolean(config.smtpUser), vars,
     });
   }),
@@ -79,19 +94,22 @@ documentEmailRouter.post(
   '/:id/send-email',
   asyncHandler(async (req, res) => {
     const user = publicDocEmailRouterGuard(req);
-    const doc = await loadOwnedDoc(user.id, String(req.params.id));
-    const toEmail = String(req.body?.toEmail ?? user.email).toLowerCase().trim();
-    const toName = String(req.body?.toName ?? user.fullName);
-    const attachPdf = req.body?.attachPdf !== false && ((await repo(Template).findOne({ where: { id: doc.templateId } }))?.attachPdf ?? true);
+    const doc = await loadOwnedDoc(user.id, String(req.params.id), isAdmin(user));
+    const owner = await docOwner(doc, user);
+    const toEmail = String(req.body?.toEmail ?? owner.email).toLowerCase().trim();
+    const toName = String(req.body?.toName ?? owner.fullName);
+    const tpl = await repo(Template).findOne({ where: { id: doc.templateId } });
+    const attachPdf = req.body?.attachPdf !== false && (tpl?.attachPdf ?? true);
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(toEmail)) throw new HttpError(400, 'A valid recipient email is required');
 
-    const tpl = await repo(Template).findOne({ where: { id: doc.templateId } });
-    const vars = { ...(await docVars(doc, user as unknown as User)), ...(req.body?.vars ?? {}) };
+    const vars = { ...(await docVars(doc, owner)), ...(req.body?.vars ?? {}) };
     const rendered = await renderEmailTemplate('document-delivered', vars, {
       subject: (req.body?.subject as string | undefined) ?? tpl?.emailSubject ?? undefined,
       bodyHtml: (req.body?.bodyHtml as string | undefined) ?? tpl?.emailBody ?? undefined,
     });
-    const attachments = attachPdf ? ((await docPdf(doc)) ? [await docPdf(doc) as { filename: string; content: Buffer; contentType: string }] : []) : [];
+    // Render the PDF attachment once (was rendered twice per send).
+    const pdf = attachPdf ? await docPdf(doc) : null;
+    const attachments = pdf ? [pdf] : [];
 
     const { sendMail } = await import('../../services/mailer.service');
     await sendMail({ toEmail, toName, template: 'document-delivered', subject: rendered.subject, html: rendered.html, attachments, documentId: doc.id });
