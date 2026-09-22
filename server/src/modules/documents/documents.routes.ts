@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { repo } from '../../db/connection';
 import { UserDocument, Template, DocumentSignature, DocStatus } from '../../db/entities';
-import { asyncHandler, HttpError } from '../../utils/helpers';
+import { asyncHandler, HttpError, isUuid } from '../../utils/helpers';
 import { authRequired } from '../../middleware/auth';
 import { logAudit } from '../../middleware/audit';
 
@@ -10,6 +10,7 @@ export const documentsRouter = Router();
 documentsRouter.use(authRequired);
 
 export async function loadOwned(userId: string, id: string, allowAdmin = false): Promise<UserDocument> {
+  if (!isUuid(id)) throw new HttpError(404, 'Document not found');
   let doc = await repo(UserDocument).findOne({ where: { id, userId } });
   if (!doc && allowAdmin) doc = (await repo(UserDocument).findOne({ where: { id } })) ?? null;
   if (!doc) throw new HttpError(404, 'Document not found');

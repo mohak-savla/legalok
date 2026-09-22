@@ -28,6 +28,16 @@ export function randomToken(bytes = 32): string {
   return crypto.randomBytes(bytes).toString('hex');
 }
 
+/**
+ * True when `s` looks like a UUID. Postgres `uuid` columns reject anything else
+ * with `22P02 invalid input syntax for type uuid`, which would surface as a 500;
+ * route handlers use this to answer 404 for garbage/incorrectly-routed ids.
+ */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export function isUuid(s: unknown): boolean {
+  return typeof s === 'string' && UUID_RE.test(s);
+}
+
 /** Evaluate a question's conditional-visibility rule against current answers */
 export function isFieldVisible(field: QuestionField, answers: Record<string, unknown>): boolean {
   if (!field.condition || !field.condition.field) return true;

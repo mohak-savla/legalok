@@ -45,9 +45,9 @@ async function main(): Promise<void> {
   app.use('/api/auth', authRouter);
   app.use('/api/auth', authProfileRouter);
   app.use('/api/templates', templatesRouter);
+  app.use('/api/documents', documentEmailRouter);
   app.use('/api/documents', documentsRouter);
   app.use('/api/documents', documentLifecycleRouter);
-  app.use('/api/documents', documentEmailRouter);
   app.use('/api/documents', signingRequestRouter);
   app.use('/api/documents', selfSignRouter);
   app.use('/api/sign', signGuestRouter);
