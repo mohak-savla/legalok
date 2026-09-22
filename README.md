@@ -36,7 +36,8 @@ via secure 7-day token link, resend request, document expiry, favorites, per-doc
 log, profile (name/phone/language), 5-language UI (EN · HI · TA · KN · GU).
 
 **Admin Studio** — Dashboard (stats, pipeline, recent activity), Users management, System audit log,
-Template CRUD, and the two-tab **Template Studio**:
+Template CRUD, a standalone **Email Merge Studio** (`/admin/emails`), and the three-tab
+**Template Studio**:
 - **① Form Builder** (Zoho Forms replica): drag-and-drop palette → canvas → properties panel
   (label, merge-key, required, Murfed-mask, options, guide text, YouTube URL, conditional logic,
   sample values) + **two-way JSON binding** drawer.
@@ -44,6 +45,16 @@ Template CRUD, and the two-tab **Template Studio**:
   color, tables-ready toolbar), **merge-field chips** auto-synced from the Form Builder, conditional
   `{{#if}}` IF-blocks, Handlebars **source/code view**, live preview with sample data + Murfed toggle,
   and publish validation that blocks unknown `{{placeholders}}`.
+- **③ Email Merge** (Zoho Writer "Merge and Send Email" replica): pick a system email, edit the
+  subject + HTML body with **merge-field chips**, toggle **Enabled**, **Attach final PDF**, and
+  **auto-send on generate**; live preview rendered with sample data, **Send test to me**, reset to
+  the built-in default. Every send is recorded in `email_logs` (subject + rendered HTML + status).
+
+**Email delivery** — real SMTP via nodemailer (Brevo/SES/any; 300/day free with Brevo). Signature
+requests auto-send with the admin's copy, reminders and completed-signature receipts are wired,
+and any generated document can be emailed with the final PDF attached — with a "here is exactly
+what the recipient will receive" preview before sending. See **[EMAIL-SETUP.md](EMAIL-SETUP.md)**
+for the provider walkthrough and **[DEPLOY.md](DEPLOY.md)** for production details.
 
 **Lifecycle state machine** — `draft → awaiting_payment → generated → pending_signatures →
 partially_signed → fully_executed / expired` (transitions validated server-side).
